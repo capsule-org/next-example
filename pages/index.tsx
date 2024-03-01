@@ -1,7 +1,8 @@
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import type { NextPage } from 'next';
-import Head from 'next/head';
-import styles from '../styles/Home.module.css';
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import type { NextPage } from "next";
+import Head from "next/head";
+import styles from "../styles/Home.module.css";
+import EmailSignup from "../components/EmailSignup";
 
 const Home: NextPage = () => {
   return (
@@ -17,14 +18,19 @@ const Home: NextPage = () => {
 
       <main className={styles.main}>
         <ConnectButton />
+        <EmailSignup />
+
+        <h1 className="text-3xl font-bold underline">
+          This is a Tailwind styled H1
+        </h1>
 
         <h1 className={styles.title}>
-          Welcome to <a href="">RainbowKit</a> + <a href="">wagmi</a> +{' '}
+          Welcome to <a href="">RainbowKit</a> + <a href="">wagmi</a> +{" "}
           <a href="https://nextjs.org">Next.js!</a>
         </h1>
 
         <p className={styles.description}>
-          Get started by editing{' '}
+          Get started by editing{" "}
           <code className={styles.code}>pages/index.tsx</code>
         </p>
 
