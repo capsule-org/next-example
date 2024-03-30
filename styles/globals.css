@@ -1,6 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* Importing external css here to ensure it is loaded by Next */
+@import url("@usecapsule/react-components/css/capsule-core.css");
+@import url("@rainbow-me/rainbowkit/styles.css");
 
 html,
 body {

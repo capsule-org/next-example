@@ -2,7 +2,8 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import type { NextPage } from "next";
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
-import EmailSignup from "../components/EmailSignup";
+import dynamic from "next/dynamic";
+import { EmailSignup } from "../components/EmailSignup";
 
 const Home: NextPage = () => {
   return (
@@ -20,7 +21,7 @@ const Home: NextPage = () => {
         <ConnectButton />
         <EmailSignup />
 
-        <h1 className="text-3xl font-bold underline">
+        <h1 className="tw-text-3xl tw-font-bold tw-underline">
           This is a Tailwind styled H1
         </h1>
 
@@ -87,4 +88,7 @@ const Home: NextPage = () => {
   );
 };
 
-export default Home;
+// Getting some weird styling (unrelated to Capsule) when using SSR on this page.
+export default dynamic(() => Promise.resolve(Home), {
+  ssr: false,
+});
