@@ -1,6 +1,6 @@
 'use client';
 
-import type Capsule from '@usecapsule/web-sdk';
+import Capsule, { Environment } from '@usecapsule/web-sdk';
 import { CapsuleEthersSigner } from '@usecapsule/ethers-v6-integration';
 import { useEffect, useState } from 'react';
 
@@ -21,20 +21,10 @@ export default function Home() {
     throw new Error('NEXT_PUBLIC_CAPSULE_API_KEY is undefined');
   }
 
-  async function loadCapsule() {
-    if (!capsule) {
-      const CapsuleModule = await import('@usecapsule/web-sdk');
-      const loadedInstance = new CapsuleModule.default(
-        CapsuleModule.Environment.DEVELOPMENT,
-        CAPSULE_API_KEY
-      );
-      setCapsule(loadedInstance);
-    }
-  }
-
   useEffect(() => {
-    loadCapsule();
-  });
+    const loadedInstance = new Capsule(Environment.DEVELOPMENT, CAPSULE_API_KEY);
+    setCapsule(loadedInstance);
+  }, []);
 
   const checkIfLoggedIn = async (): Promise<void> => {
     if (!capsule) {
