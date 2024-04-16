@@ -1,11 +1,12 @@
 'use client';
 
-import Capsule, { Environment } from '@usecapsule/web-sdk';
+import Capsule, { Environment, CapsuleModal, OAuthMethod } from '@usecapsule/react-sdk';
 import { CapsuleEthersSigner } from '@usecapsule/ethers-v6-integration';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Home() {
-  const [capsule, setCapsule] = useState<Capsule>();
+  const [isModalView, setIsModalView] = useState<boolean>(true);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [email, setEmail] = useState<string>('');
   const [signature, setSignature] = useState<string>();
   const [verificationCode, setVerificationCode] = useState<string>('');
@@ -20,11 +21,14 @@ export default function Home() {
   if (!CAPSULE_API_KEY) {
     throw new Error('NEXT_PUBLIC_CAPSULE_API_KEY is undefined');
   }
+  const capsule = new Capsule(Environment.DEVELOPMENT, CAPSULE_API_KEY);
 
   useEffect(() => {
-    const loadedInstance = new Capsule(Environment.DEVELOPMENT, CAPSULE_API_KEY);
-    setCapsule(loadedInstance);
-  }, []);
+    const address = Object.values(capsule.getWallets())?.[0]?.address;
+    if (address) {
+      setWalletAddress(address);
+    }
+  }, [isOpen]);
 
   const checkIfLoggedIn = async (): Promise<void> => {
     if (!capsule) {
@@ -89,88 +93,116 @@ export default function Home() {
     <main className="m-5 flex flex-col gap-4">
       <button
         className="m-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-        onClick={checkIfLoggedIn}
+        onClick={() => setIsModalView(!isModalView)}
       >
-        Check if User Is Logged In
+        {isModalView ? 'Use web-sdk View' : 'Use modal View'}
       </button>
-      <p className="m-2">
-        {userIsLoggedIn ? 'User is logged in' : 'User is not logged in'}
-      </p>
-      <input
-        className="border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-5 pt-5 backdrop-blur-2xl dark:bg-zinc-800/30 dark:from-inherit lg:bg-gray-200 lg:p-4"
-        name="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="Enter your email"
-      />
-      <button
-        className="m-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-        onClick={createAccount}
-      >
-        Create Account
-      </button>
-      <input
-        className="border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-5 pt-5 backdrop-blur-2xl dark:bg-zinc-800/30 dark:from-inherit lg:bg-gray-200 lg:p-4"
-        name="verificationCode"
-        value={verificationCode}
-        onChange={(e) => setVerificationCode(e.target.value)}
-        placeholder="Enter the verification code"
-      />
-      <button
-        className="m-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-        onClick={verifyEmail}
-      >
-        Verify Email
-      </button>
-      {passkeyCreationUrl &&
-        <p className="m-2">
-          Passkey Creation URL: {passkeyCreationUrl}
-        </p>
-      }
-      {recoverySecret &&
-        <p className="m-2">
-          Recovery Secret: {recoverySecret}
-        </p>
+      {
+        isModalView ?
+        <>
+          <button
+            className="m-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            onClick={() => setIsOpen(true)}
+          >
+            Open Modal
+          </button>
+          <CapsuleModal
+            capsule={capsule}
+            onClose={() => setIsOpen(false)}
+            isOpen={isOpen}
+            appName='Next.js Example'
+            oAuthMethods={[OAuthMethod.GOOGLE, OAuthMethod.FACEBOOK, OAuthMethod.APPLE, OAuthMethod.DISCORD]}
+          />
+        </> :
+        <>
+          <button
+            className="m-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            onClick={checkIfLoggedIn}
+          >
+            Check if User Is Logged In
+          </button>
+          <p className="m-2">
+            {userIsLoggedIn ? 'User is logged in' : 'User is not logged in'}
+          </p>
+          <input
+            className="border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-5 pt-5 backdrop-blur-2xl dark:bg-zinc-800/30 dark:from-inherit lg:bg-gray-200 lg:p-4"
+            name="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email"
+          />
+          <button
+            className="m-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            onClick={createAccount}
+          >
+            Create Account
+          </button>
+          <input
+            className="border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-5 pt-5 backdrop-blur-2xl dark:bg-zinc-800/30 dark:from-inherit lg:bg-gray-200 lg:p-4"
+            name="verificationCode"
+            value={verificationCode}
+            onChange={(e) => setVerificationCode(e.target.value)}
+            placeholder="Enter the verification code"
+          />
+          <button
+            className="m-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            onClick={verifyEmail}
+          >
+            Verify Email
+          </button>
+          {passkeyCreationUrl &&
+            <p className="m-2">
+              Passkey Creation URL: {passkeyCreationUrl}
+            </p>
+          }
+          {recoverySecret &&
+            <p className="m-2">
+              Recovery Secret: {recoverySecret}
+            </p>
+          }
+          <input
+            className="border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-5 pt-5 backdrop-blur-2xl dark:bg-zinc-800/30 dark:from-inherit lg:bg-gray-200 lg:p-4"
+            name="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email"
+          />
+          <button
+            className="m-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            onClick={initiateLogin}
+          >
+            Initiate Login
+          </button>
+          {passkeyLoginUrl &&
+            <p className="m-2">
+              Passkey Login URL: {passkeyLoginUrl}
+            </p>
+          }
+        </>
       }
       {walletAddress &&
-        <p className="m-2">
-          Wallet Address: {walletAddress}
-        </p>
+        <>
+          <p className="m-2">
+            Wallet Address: {walletAddress}
+          </p>
+          <input
+            className="border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-5 pt-5 backdrop-blur-2xl dark:bg-zinc-800/30 dark:from-inherit lg:bg-gray-200 lg:p-4"
+            name="messageToSign"
+            value={messageToSign}
+            onChange={(e) => setMessageToSign(e.target.value)}
+            placeholder="Message to sign"
+          />
+          <button
+            className="m-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            onClick={() => signMessage(messageToSign)}
+          >
+            Sign Message
+          </button>
+        </>
       }
-      <input
-        className="border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-5 pt-5 backdrop-blur-2xl dark:bg-zinc-800/30 dark:from-inherit lg:bg-gray-200 lg:p-4"
-        name="messageToSign"
-        value={messageToSign}
-        onChange={(e) => setMessageToSign(e.target.value)}
-        placeholder="Message to sign"
-      />
-      <button
-        className="m-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-        onClick={() => signMessage(messageToSign)}
-      >
-        Sign Message
-      </button>
       {signature &&
         <p className="m-2">
           Signature: {signature}
-        </p>
-      }
-      <input
-        className="border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-5 pt-5 backdrop-blur-2xl dark:bg-zinc-800/30 dark:from-inherit lg:bg-gray-200 lg:p-4"
-        name="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="Enter your email"
-      />
-      <button
-        className="m-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-        onClick={initiateLogin}
-      >
-        Initiate Login
-      </button>
-      {passkeyLoginUrl &&
-        <p className="m-2">
-          Passkey Login URL: {passkeyLoginUrl}
         </p>
       }
       <button
